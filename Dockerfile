@@ -2,10 +2,13 @@
 FROM node:18-alpine AS frontend-build
 WORKDIR /app
 
-# Copy frontend source
-COPY Inventory_Management_Portal/ .
+# Install git
+RUN apk add --no-cache git
 
-# Install dependencies and build
+# Clone frontend repository
+RUN git clone https://github.com/Chhaviii0905/Inventory_Management_Portal.git .
+
+# Install dependencies and build Angular
 RUN npm ci --no-audit --no-fund --progress=false
 RUN npm run build --configuration=production
 
@@ -13,8 +16,11 @@ RUN npm run build --configuration=production
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS backend-build
 WORKDIR /src
 
-# Copy backend source
-COPY InventoryManagementSystemApis/ .
+# Install git (Debian uses apt)
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
+# Clone backend repository
+RUN git clone https://github.com/Chhaviii0905/InventoryManagementSystemApis.git .
 
 # Restore & publish
 RUN dotnet restore
