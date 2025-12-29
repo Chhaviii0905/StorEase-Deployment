@@ -2,36 +2,26 @@
 FROM node:18-alpine AS frontend-build
 WORKDIR /app
 
-# Install git
-RUN apk add --no-cache git
+# Copy frontend source
+COPY Inventory_Management_Portal/ .
 
-# Clone frontend repository
-RUN git clone https://github.com/Chhaviii0905/Inventory_Management_Portal.git .
-
-# Install dependencies
+# Install dependencies and build
 RUN npm ci --no-audit --no-fund --progress=false
-
-# Build Angular in PRODUCTION mode
 RUN npm run build --configuration=production
-
 
 # ===================== BACKEND BUILD =====================
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS backend-build
 WORKDIR /src
 
-# Install git
-RUN apk add --no-cache git
-
-# Clone backend repository
-RUN git clone https://github.com/Chhaviii0905/InventoryManagementSystemApis.git .
+# Copy backend source
+COPY InventoryManagementSystemApis/ .
 
 # Restore & publish
 RUN dotnet restore
 RUN dotnet publish -c Release -o /app/publish
 
-
 # ===================== RUNTIME =====================
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
 # Copy backend published output
